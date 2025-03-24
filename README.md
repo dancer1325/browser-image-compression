@@ -3,182 +3,47 @@
 [![npm](./coverage/badge.svg)](https://github.com/Donaldcwl/browser-image-compression)
 [![npm](https://img.shields.io/npm/l/browser-image-compression.svg)](https://github.com/Donaldcwl/browser-image-compression)
 
-Javascript module to be run in the web browser for image compression.
+* == Javascript module /
+  * if you run | web browser -> compress image
 
 ## Features
-- You can use this module to compress jpeg, png, webp, and bmp images by reducing **resolution** or **storage size** before uploading to the application server to save bandwidth.
-- **Multi-thread** (web worker) non-blocking compression is supported through options.
+* compress jpeg, png, webp, and bmp images 
+  * | BEFORE uploading -- to the -- application server
+    * reduce **resolution** or **storage size** == save bandwidth
+* supports **Multi-thread** (web worker)
+  * == NON-block compression
 
+## ExampleS
+* [here](example)
 
-## Demo / Example
-open https://donaldcwl.github.io/browser-image-compression/example/basic.html
+## How to use?
+* _Example:_ [here](example/howToUse.html)
 
-or check the "[example]" folder in this repo
+### -- via -- async await syntax
+* _Example:_ [here](example/howToUse.html)
 
-
-## Usage
-```html
-<input type="file" accept="image/*" onchange="handleImageUpload(event);">
-```
-### async await syntax:
-```javascript
-async function handleImageUpload(event) {
-
-  const imageFile = event.target.files[0];
-  console.log('originalFile instanceof Blob', imageFile instanceof Blob); // true
-  console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
-
-  const options = {
-    maxSizeMB: 1,
-    maxWidthOrHeight: 1920,
-    useWebWorker: true,
-  }
-  try {
-    const compressedFile = await imageCompression(imageFile, options);
-    console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
-    console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
-
-    await uploadToServer(compressedFile); // write your own logic
-  } catch (error) {
-    console.log(error);
-  }
-
-}
-```
-### Promise.then().catch() syntax:
-<details>
-  <summary>Click to expand</summary>
-  
-  ```javascript
-  function handleImageUpload(event) {
-
-    var imageFile = event.target.files[0];
-    console.log('originalFile instanceof Blob', imageFile instanceof Blob); // true
-    console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
-
-    var options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1920,
-      useWebWorker: true
-    }
-    imageCompression(imageFile, options)
-      .then(function (compressedFile) {
-        console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
-        console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
-
-        return uploadToServer(compressedFile); // write your own logic
-      })
-      .catch(function (error) {
-        console.log(error.message);
-      });
-  }
-  ```
-</details>
-
-## Installing
-### Use as ES module:
-You can install it via npm or yarn
-```bash
-npm install browser-image-compression --save
-# or
-yarn add browser-image-compression
-```
-```javascript
-import imageCompression from 'browser-image-compression';
-```
-(can be used in frameworks like React, Angular, Vue etc)
-
-(work with bundlers like webpack and rollup)
-
-### (or) Load UMD js file:
-You can download imageCompression from the [dist folder][dist].
-
-Alternatively, you can use a CDN like [delivrjs]:
-```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-```
-
-
-## Support
-If this project helps you reduce the time to develop, you can buy me a cup of coffee :)
-
-<a href="https://donaldcwl.github.io/donation/" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" height=60 width=217 ></a>
-
-(powered by Stripe)
+### -- via -- Promise.then().catch() syntax
+* _Example:_ [here](example/howToUse.html)
 
 ## API
-### Main function
-```javascript
-// you should provide one of maxSizeMB, maxWidthOrHeight in the options
-const options: Options = { 
-  maxSizeMB: number,            // (default: Number.POSITIVE_INFINITY)
-  maxWidthOrHeight: number,     // compressedFile will scale down by ratio to a point that width or height is smaller than maxWidthOrHeight (default: undefined)
-                                // but, automatically reduce the size to smaller than the maximum Canvas size supported by each browser.
-                                // Please check the Caveat part for details.
-  onProgress: Function,         // optional, a function takes one progress argument (percentage from 0 to 100) 
-  useWebWorker: boolean,        // optional, use multi-thread web worker, fallback to run in main-thread (default: true)
-  libURL: string,               // optional, the libURL of this library for importing script in Web Worker (default: https://cdn.jsdelivr.net/npm/browser-image-compression/dist/browser-image-compression.js)
-  preserveExif: boolean,        // optional, use preserve Exif metadata for JPEG image e.g., Camera model, Focal length, etc (default: false)
-
-  signal: AbortSignal,          // optional, to abort / cancel the compression
-
-  // following options are for advanced users
-  maxIteration: number,         // optional, max number of iteration to compress the image (default: 10)
-  exifOrientation: number,      // optional, see https://stackoverflow.com/a/32490603/10395024
-  fileType: string,             // optional, fileType override e.g., 'image/jpeg', 'image/png' (default: file.type)
-  initialQuality: number,       // optional, initial quality value between 0 and 1 (default: 1)
-  alwaysKeepResolution: boolean // optional, only reduce quality, always keep width and height (default: false)
-}
-
-imageCompression(file: File, options: Options): Promise<File>
-```
+### `imageCompression(file: File, options: Options): Promise<File>`
+* == MAIN function
+* [source code](lib/index.js) & [Options](lib/index.d.md)
 
 #### Caveat
-Each browser limits [the maximum size](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas#maximum_canvas_size) of a browser Canvas object. <br/>
-So, we resize the image to less than the maximum size that each browser restricts. <br/>
-(However, the `proportion/ratio` of the image remains.)
+* [browser Canvas object's MAXIMUM size](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas#maximum_canvas_size) -- limited by -- EACH browser
+  * == ⚠️image -- is resized to -- < EACH browser's MAXIMUM size / restricted ⚠️
+  * / remains image's `proportion/ratio`
 
 #### Abort / Cancel Compression
-To use this feature, please check the browser compatibility: https://caniuse.com/?search=AbortController
-```javascript
-function handleImageUpload(event) {
-
-  var imageFile = event.target.files[0];
-
-  var controller = new AbortController();
-
-  var options = {
-    // other options here
-    signal: controller.signal,
-  }
-  imageCompression(imageFile, options)
-    .then(function (compressedFile) {
-      return uploadToServer(compressedFile); // write your own logic
-    })
-    .catch(function (error) {
-      console.log(error.message); // output: I just want to stop
-    });
-  
-  // simulate abort the compression after 1.5 seconds
-  setTimeout(function () {
-    controller.abort(new Error('I just want to stop'));
-  }, 1500);
-}
-```
+* requirements
+  * [browser compatibility](https://caniuse.com/?search=AbortController)
+* _Example:_ [here](example/howToUse.html)
 
 ### Helper function
-- for advanced users only, most users won't need to use the helper functions
-```javascript
-imageCompression.getDataUrlFromFile(file: File): Promise<base64 encoded string>
-imageCompression.getFilefromDataUrl(dataUrl: string, filename: string, lastModified?: number): Promise<File>
-imageCompression.loadImage(url: string): Promise<HTMLImageElement>
-imageCompression.drawImageInCanvas(img: HTMLImageElement, fileType?: string): HTMLCanvasElement | OffscreenCanvas
-imageCompression.drawFileInCanvas(file: File, options?: Options): Promise<[ImageBitmap | HTMLImageElement, HTMLCanvasElement | OffscreenCanvas]>
-imageCompression.canvasToFile(canvas: HTMLCanvasElement | OffscreenCanvas, fileType: string, fileName: string, fileLastModified: number, quality?: number): Promise<File>
-imageCompression.getExifOrientation(file: File): Promise<number> // based on https://stackoverflow.com/a/32490603/10395024
-imageCompression.copyExifWithoutOrientation(copyExifFromFile: File, copyExifToFile: File): Promise<File> // based on https://gist.github.com/tonytonyjan/ffb7cd0e82cb293b843ece7e79364233
-```
-
+* recommended
+  * ONLY be used -- by -- advanced users
+* see [utils.js's functions](lib/utils.js)
 
 ## Browsers support
 
@@ -187,42 +52,33 @@ imageCompression.copyExifWithoutOrientation(copyExifFromFile: File, copyExifToFi
 | IE10, IE11, Edge| last 2 versions| last 2 versions| last 2 versions| last 2 versions| last 2 versions
 
 ### IE support
-This library uses ES features such as Promise API, globalThis. If you need to support browsers that do not support new ES features like IE. You can include the core-js polyfill in your project.
-
-You can include the following script to load the core-js polyfill:
-```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.21.1/minified.min.js"></script>
-```
+* steps
+  * ⚠️include the "core-js polyfill" | your project ⚠️
+    ```html
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.21.1/minified.min.js"></script>
+    ```
+    * Reason: 🧠this library -- uses -- ES features (_Example:_ Promise API, globalThis)
 
 ### Webp support
-The webp compression is supported on major browsers. Please see https://caniuse.com/mdn-api_offscreencanvas_converttoblob_option_type_parameter_webp for browser compatibility.
+* webp compression -- is supported on -- MAJOR browsers
+  * see [here](https://caniuse.com/mdn-api_offscreencanvas_converttoblob_option_type_parameter_webp)
 
-
-## Remarks for compression to work in Web Worker
-The browser needs to support "OffscreenCanvas" API in order to take advantage of non-blocking compression. If the browser does not support "OffscreenCanvas" API, the main thread is used instead. See https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#browser_compatibility for browser compatibility of "OffscreenCanvas" API.
-
+## About Compression | Web Worker
+* if browser supports "OffscreenCanvas" API -> you can use NON-blocking compression
+  * OTHERWISE, MAIN thread is used
+  * [browser compatibility of "OffscreenCanvas" API](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas#browser_compatibility)  
 
 ## Typescript type definitions
-Typescript definitions are included in the package & referenced in the `types` section of the `package.json`
+* see `package.json`'s `types` 
 
-
-## Remarks on Content Security Policy (CSP)
-If your website has CSP enabled and you want to use Web Worker (useWebWorker: true), please add the following to the response header
+## About Content Security Policy (CSP)
+* if your website has CSP enabled & you want to use Web Worker (== `useWebWorker: true`) -> | response header, add
 `content-security-policy: script-src 'self' blob: https://cdn.jsdelivr.net`
-
-- `blob:` is for loading Web Worker script
-- `https://cdn.jsdelivr.net` is for importing this library from CDN inside Web Worker script. If you don't want to load this library from CDN, you can set your self hosted library URL in `options.libURL`.
-
-
-## Contribution
-1. fork the repo and git clone it
-2. run `npm run watch` # it will watch code change in lib/ folder and generate js in dist/ folder
-3. add/update code in lib/ folder
-4. try the code by opening example/development.html which will load the js in dist/ folder
-5. add/update test in test/ folder
-6. `npm run test`
-7. push to your forked repo on github
-8. make a pull request to dev branch of this repo
+  *`blob:` is for loading Web Worker script
+  * `https://cdn.jsdelivr.net`
+    * allows
+      * importing this CDN's library | Web Worker script
+  * if you do NOT want to load this library -- from -- CDN -> set your self hosted library URL | `options.libURL`
 
 [dist]: https://github.com/Donaldcwl/browser-image-compression/tree/master/dist
 [example]: https://github.com/Donaldcwl/browser-image-compression/tree/master/example

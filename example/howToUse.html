@@ -1,0 +1,98 @@
+<head>
+    <!--<script src="/lib/index.js"></script>-->
+    <!--<script src="/dist/browser-image-compression.js"></script>-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>-->
+</head>
+<body>
+    <input type="file" accept="image/*" onchange="handleImageUploadViaAsyncAwait(event);">
+
+    <input type="file" accept="image/*" onchange="handleImageUploadViaPromise(event);">
+
+    <input type="file" accept="image/*" onchange="handleImageUploadWhichCanBeAborted(event);">
+
+    <!--<script src="/lib/index.js">-->
+    <!--<script>-->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <!--<script type="module">-->
+    <script>
+        //import copyExifWithoutOrientation from "../lib";
+        //import imageCompression from "../lib";
+        //import imageCompression from "/dist";
+        //import imageCompression from "../dist";
+
+        async function handleImageUploadViaAsyncAwait(event) {
+
+            const imageFile = event.target.files[0];
+            console.log('[handleImageUploadViaAsyncAwait] originalFile instanceof Blob', imageFile instanceof Blob); // true
+            console.log(`[handleImageUploadViaAsyncAwait] originalFile size ${imageFile.size / 1024 / 1024} MB`);
+
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            }
+            try {
+                const compressedFile = await imageCompression(imageFile, options);
+                console.log('[handleImageUploadViaAsyncAwait] compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+                // TODO: Why `compressedFile.size` > `imageFile.size` ?
+                console.log(`[handleImageUploadViaAsyncAwait] compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+
+                await uploadToServer(compressedFile); // write your OWN logic
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        function handleImageUploadViaPromise(event) {
+
+            var imageFile = event.target.files[0];
+            console.log('[handleImageUploadViaPromise] originalFile instanceof Blob', imageFile instanceof Blob); // true
+            console.log(`[handleImageUploadViaPromise] originalFile size ${imageFile.size / 1024 / 1024} MB`);
+
+            var options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true
+            }
+            // TODO: Why `compressedFile.size` > `imageFile.size` ?
+            imageCompression(imageFile, options)
+                .then(function (compressedFile) {
+                    console.log('[handleImageUploadViaPromise] compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+                    console.log(`[handleImageUploadViaPromise] compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+
+                    return uploadToServer(compressedFile); // write your own logic
+                })
+                .catch(function (error) {
+                    console.log(error.message);
+                });
+        }
+
+        function handleImageUploadWhichCanBeAborted(event) {
+
+            var imageFile = event.target.files[0];
+            console.log('[handleImageUploadWhichCanBeAborted] originalFile instanceof Blob', imageFile instanceof Blob); // true
+            console.log(`[handleImageUploadWhichCanBeAborted] originalFile size ${imageFile.size / 1024 / 1024} MB`);
+
+            var controller = new AbortController();
+            var options = {
+                signal: controller.signal,
+            }
+            // TODO: Why `compressedFile.size` > `imageFile.size` ?
+            imageCompression(imageFile, options)
+                .then(function (compressedFile) {
+                    console.log('[handleImageUploadWhichCanBeAborted] compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+                    console.log(`[handleImageUploadWhichCanBeAborted] compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+
+                    return uploadToServer(compressedFile); // write your own logic
+                })
+                .catch(function (error) {
+                    console.log(error.message); // output: I just want to stop
+                });
+
+            // simulate abort the compression after 1.5 seconds
+            setTimeout(function () {
+                controller.abort(new Error('I just want to stop'));
+            }, 1500);
+        }
+    </script>
+</body>
