@@ -116,8 +116,14 @@
                     img.onload = function() {
                         EXIF.getData(img, function() {
                             const metadata = EXIF.getAllTags(this);
-                            // TODO: Why is it empty?
+                            // TODO: Why is it prototype object?
                             console.log("📸 EXIF Metadata:", metadata);
+                            /*const plainMetadata = { ...metadata };
+                            console.log("plainMetadata ", plainMetadata);*/
+                            // Convert to a pure JSON object
+                            /*const plainMetadata = Object.fromEntries(Object.entries(metadata));
+                            console.log(plainMetadata); // Now it's a real object without prototype issues*/
+                            /*console.log(JSON.stringify(metadata, null, 2));*/
                             if (metadata.dateTime) console.log("📅 Date Taken:", metadata.dateTime);
                             if (metadata.Make && metadata.Model) console.log("📷 Camera:", metadata.Make, metadata.Model);
                             if (metadata.GPSLatitude && metadata.GPSLongitude) console.log("📍 GPS:", metadata.GPSLatitude, metadata.GPSLongitude);
