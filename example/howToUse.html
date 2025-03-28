@@ -13,6 +13,7 @@
     <!--<script src="/lib/index.js">-->
     <!--<script>-->
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
     <!--<script type="module">-->
     <script>
         //import copyExifWithoutOrientation from "../lib";
@@ -25,6 +26,11 @@
             const imageFile = event.target.files[0];
             console.log('[handleImageUploadViaAsyncAwait] originalFile instanceof Blob', imageFile instanceof Blob); // true
             console.log(`[handleImageUploadViaAsyncAwait] originalFile size ${imageFile.size / 1024 / 1024} MB`);
+            // check metadata
+            console.log(`[handleImageUploadViaAsyncAwait] originalFile.lastModified ${imageFile.lastModified}`);
+            console.log(`[handleImageUploadViaAsyncAwait] originalFile.name ${imageFile.name}`);
+            console.log(`[handleImageUploadViaAsyncAwait] originalFile.type ${imageFile.type}`);
+            await extractExifData(imageFile);
 
             const options = {
                 maxSizeMB: 1,
@@ -36,8 +42,13 @@
                 console.log('[handleImageUploadViaAsyncAwait] compressedFile instanceof Blob', compressedFile instanceof Blob); // true
                 // TODO: Why `compressedFile.size` > `imageFile.size` ?
                 console.log(`[handleImageUploadViaAsyncAwait] compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+                // check metadata
+                console.log(`[handleImageUploadViaAsyncAwait] compressedFile.lastModified ${compressedFile.lastModified}`);
+                console.log(`[handleImageUploadViaAsyncAwait] compressedFile.name ${compressedFile.name}`);
+                console.log(`[handleImageUploadViaAsyncAwait] compressedFile.type ${compressedFile.type}`);
+                await extractExifData(compressedFile);
 
-                await uploadToServer(compressedFile); // write your OWN logic
+                //await uploadToServer(compressedFile); // write your OWN logic
             } catch (error) {
                 console.log(error);
             }
@@ -93,6 +104,29 @@
             setTimeout(function () {
                 controller.abort(new Error('I just want to stop'));
             }, 1500);
+        }
+
+        async function extractExifData(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = function() {
+                        EXIF.getData(img, function() {
+                            const metadata = EXIF.getAllTags(this);
+                            // TODO: Why is it empty?
+                            console.log("📸 EXIF Metadata:", metadata);
+                            if (metadata.dateTime) console.log("📅 Date Taken:", metadata.dateTime);
+                            if (metadata.Make && metadata.Model) console.log("📷 Camera:", metadata.Make, metadata.Model);
+                            if (metadata.GPSLatitude && metadata.GPSLongitude) console.log("📍 GPS:", metadata.GPSLatitude, metadata.GPSLongitude);
+                            resolve();
+                        });
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
         }
     </script>
 </body>
