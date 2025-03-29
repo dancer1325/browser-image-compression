@@ -5,10 +5,20 @@
 </head>
 <body>
     <input type="file" accept="image/*" onchange="handleImageUploadViaAsyncAwait(event);">
+    </br>
 
     <input type="file" accept="image/*" onchange="handleImageUploadViaPromise(event);">
+    </br>
 
     <input type="file" accept="image/*" onchange="handleImageUploadWhichCanBeAborted(event);">
+    </br>
+
+    <img src="DSCN0614_small.jpg" id="img1" />
+    <pre>Make and model: <span id="makeAndModel"></span></pre>
+    </br>
+    <!-- TODO: Create compressedImage adding the EXIF data-->
+    <!--<img id="compressed">
+    <pre>Make and model: <span id="makeAndModelCompressed"></span></pre>-->
 
     <!--<script src="/lib/index.js">-->
     <!--<script>-->
@@ -133,6 +143,18 @@
                     };
                 };
                 reader.readAsDataURL(file);
+            });
+        }
+
+        // REQUIRED to make exif work
+        window.onload=getExif;
+        function getExif() {
+            var img1 = document.getElementById("img1");
+            EXIF.getData(img1, function() {
+                var make = EXIF.getTag(this, "Make");
+                var model = EXIF.getTag(this, "Model");
+                var makeAndModel = document.getElementById("makeAndModel");
+                makeAndModel.innerHTML = `${make} ${model}`;
             });
         }
     </script>
